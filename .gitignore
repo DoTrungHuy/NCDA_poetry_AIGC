@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+outputs/
+assets/images/temp_bg.png
+assets/images/test_bg.png
+poetry_poster*.jpg
+poetry_poster*_process.json
