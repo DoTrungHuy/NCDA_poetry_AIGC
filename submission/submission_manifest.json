@@ -1,0 +1,145 @@
+{
+  "title": "声入诗境",
+  "category": "NCDA 1-L1 AIGC-图片类",
+  "generated_at": "2026-06-12T00:57:04",
+  "deliverables": [
+    {
+      "path": "submission/works/01_春晓.jpg",
+      "bytes": 919273,
+      "width": 1440,
+      "height": 2160,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/works/02_枫桥夜泊.jpg",
+      "bytes": 915932,
+      "width": 1440,
+      "height": 2160,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/works/03_早发白帝城.jpg",
+      "bytes": 883446,
+      "width": 1440,
+      "height": 2160,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/works/04_鹿柴.jpg",
+      "bytes": 987272,
+      "width": 1440,
+      "height": 2160,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/works/05_夜雨寄北.jpg",
+      "bytes": 980029,
+      "width": 1440,
+      "height": 2160,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/a3_poster.jpg",
+      "bytes": 2839666,
+      "width": 3508,
+      "height": 4961,
+      "dpi": [
+        300,
+        300
+      ]
+    },
+    {
+      "path": "submission/process/creation_process.pdf",
+      "bytes": 1999414
+    },
+    {
+      "path": "submission/PLATFORM_COPY.md",
+      "bytes": 1450
+    },
+    {
+      "path": "submission/video/narration_script.md",
+      "bytes": 1036
+    },
+    {
+      "path": "submission/video/声入诗境_宣讲视频.mp4",
+      "bytes": 5881238
+    }
+  ],
+  "series": [
+    {
+      "index": "01",
+      "title": "春晓",
+      "author": "孟浩然",
+      "dynasty": "唐",
+      "sound": "鸟鸣",
+      "poem": "春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
+      "source": "01_spring_dawn.png",
+      "concept": "雨后庭院由暗至明，鸟鸣化为穿过花枝与水面的同心墨痕。",
+      "palette": "暖白 / 雾灰 / 豆青 / 桃粉",
+      "prompt": "Jiangnan spring dawn after wind and rain, wet stone, scattered peach petals, distant birds implied through rhythmic silhouettes and expanding ink rings, contemporary Chinese ink wash, mineral pigment, xuan paper grain."
+    },
+    {
+      "index": "02",
+      "title": "枫桥夜泊",
+      "author": "张继",
+      "dynasty": "唐",
+      "sound": "钟声",
+      "poem": "月落乌啼霜满天，江枫渔火对愁眠。姑苏城外寒山寺，夜半钟声到客船。",
+      "source": "02_midnight_bell.png",
+      "concept": "夜半钟声不以钟体出现，而以穿越雾、水与客船的金色涟漪呈现。",
+      "palette": "墨黑 / 月灰 / 靛青 / 枫锈",
+      "prompt": "Sleepless boat at midnight near Hanshan Temple, moon setting, crow, maple branches, two fishing lights, temple bell expressed as elegant concentric ink ripples through fog."
+    },
+    {
+      "index": "03",
+      "title": "早发白帝城",
+      "author": "李白",
+      "dynasty": "唐",
+      "sound": "猿啼",
+      "poem": "朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",
+      "source": "03_gorge_echo.png",
+      "concept": "猿啼被转译为峡谷间反复折返的断续墨线，与轻舟形成速度对比。",
+      "palette": "晨金 / 石青 / 墨灰 / 朱砂",
+      "prompt": "Tiny ancient boat moving swiftly through the Three Gorges at dawn, layered cliffs, hidden gibbons suggested by elongated broken ink echoes traveling between canyon walls."
+    },
+    {
+      "index": "04",
+      "title": "鹿柴",
+      "author": "王维",
+      "dynasty": "唐",
+      "sound": "人语回响",
+      "poem": "空山不见人，但闻人语响。返景入深林，复照青苔上。",
+      "source": "04_empty_mountain.png",
+      "concept": "无人空山中，声音通过层层错位、逐渐消隐的林木轮廓完成回返。",
+      "palette": "苔绿 / 墨黑 / 淡金 / 宣纸白",
+      "prompt": "Empty deep mountain forest, no visible people, faint human voice returning from unseen valleys, sunlight touching green moss, fading repeated ink bands and forest silhouettes."
+    },
+    {
+      "index": "05",
+      "title": "夜雨寄北",
+      "author": "李商隐",
+      "dynasty": "唐",
+      "sound": "夜雨",
+      "poem": "君问归期未有期，巴山夜雨涨秋池。何当共剪西窗烛，却话巴山夜雨时。",
+      "source": "05_night_rain.png",
+      "concept": "雨线与池面涟漪构成时间层，窗灯连接此刻的孤独与未来的重逢。",
+      "palette": "雨灰 / 墨蓝 / 琥珀 / 枫褐",
+      "prompt": "Autumn night rain in Bashan, dark courtyard pond, solitary warm lamp behind paper window, rain rhythm translated into vertical ink traces and overlapping circles on water."
+    }
+  ]
+}

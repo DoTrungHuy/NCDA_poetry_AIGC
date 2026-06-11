@@ -1,7 +1,9 @@
 .env
+.idea/
 __pycache__/
 *.pyc
 outputs/
+submission/video/_segments/
 assets/images/temp_bg.png
 assets/images/test_bg.png
 poetry_poster*.jpg

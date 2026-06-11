@@ -1,8 +1,46 @@
 # 诗境再造：古典诗词意象的 AIGC 视觉转译系统
 
-面向 **未来设计师·全国高校数字艺术设计大赛（NCDA）非命题赛道 1L AIGC-图片类** 的古诗词系列视觉生成项目。
+## 正式参赛作品：《声入诗境》
 
-本项目通过 **LLM 解析古典诗词意象**，生成英文文生图提示词，调用云端文生图 API 生成诗境底图，再使用 **Python + Pillow** 完成竖排文字、挂轴、印章、宣纸肌理和 A3 宣传海报排版，最终形成可用于 NCDA 提交的系列图片作品与过程材料。
+面向 **未来设计师·全国高校数字艺术设计大赛（NCDA）非命题赛道 1-L1 AIGC-图片类** 完成的系列视觉作品。
+
+作品选取鸟鸣、钟声、猿啼、人语回响与夜雨五种声音，把声音的扩散、回返、断续、叠加和消隐转化为画面构图。AIGC 用于生成无文字诗境底图，主题策划、候选筛选、色彩统一、声音线索、传统竖排、印章、宣传海报和过程编排由人工完成。
+
+![《声入诗境》A3 宣传海报](submission/a3_poster.jpg)
+
+### 正式提交成果
+
+```text
+submission/
+├── works/                         # 5 张系列 JPG，1440x2160、300dpi
+├── a3_poster.jpg                  # A3 竖版宣传海报，3508x4961、300dpi
+├── process/creation_process.pdf   # 8 页创作过程说明
+├── video/声入诗境_宣讲视频.mp4      # 96 秒、1080p、H.264 + AAC
+├── video/narration_script.md      # 中文宣讲稿
+├── PLATFORM_COPY.md               # 平台投稿文案
+└── submission_manifest.json       # 文件尺寸、大小与生成信息
+```
+
+五张作品依次表现《春晓》的鸟鸣、《枫桥夜泊》的钟声、《早发白帝城》的猿啼、《鹿柴》的人语回响和《夜雨寄北》的夜雨。
+
+GitHub 用于作品、源图、过程证据和构建工具备份。正式报名仍需通过 NCDA 平台并由学校管理员审核。
+
+### 重建与检查
+
+需要 Python 3.9+、Pillow 和 FFmpeg。Windows 上如果安装了 Microsoft Huihui 中文语音，构建器会自动生成中文旁白。
+
+```bash
+python build_competition_package.py
+python ncda_check.py --dir submission
+```
+
+检查器验证作品数量和大小、A3 尺寸与 DPI、过程 PDF、平台文案、提交清单，以及 MP4 的时长、1080p H.264 视频流和 AAC 音轨。
+
+---
+
+## 原始生成工具
+
+本项目也保留了通过 **LLM 解析古典诗词意象**、调用云端文生图 API，再使用 **Python + Pillow** 进行程序化排版的原始生成管线。
 
 ---
 
@@ -10,7 +48,7 @@
 
 - **推荐赛事**：未来设计师·全国高校数字艺术设计大赛（NCDA）
 - **推荐赛道**：非命题赛道
-- **推荐类别**：1L AIGC-图片类
+- **推荐类别**：1-L1 AIGC-图片类
 - **作品形式**：5 张或以上成系列 JPG 图片
 - **过程材料**：自动生成 JSON 过程日志与 `process_report.md`，可整理为创作过程 PDF
 - **宣传材料**：自动生成 A3 竖版 300dpi JPG 宣传海报
@@ -98,9 +136,9 @@ python verify_typesetting.py
 
 ---
 
-## NCDA 提交前检查
+## 旧版系列目录检查
 
-生成系列作品后运行：
+旧版 `outputs/ncda_series` 目录仍可检查：
 
 ```bash
 python ncda_check.py --dir outputs/ncda_series
@@ -112,7 +150,7 @@ python ncda_check.py --dir outputs/ncda_series
 python ncda_check.py --dir outputs/ncda_series --forbidden 你的姓名 学校名 指导老师名
 ```
 
-脚本会检查：
+正式作品请优先运行 `python ncda_check.py --dir submission`。旧版目录检查包括：
 
 - 系列作品是否不少于 5 张
 - JPG 单张是否不超过 5MB
