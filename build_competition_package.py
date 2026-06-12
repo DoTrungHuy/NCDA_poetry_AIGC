@@ -273,6 +273,21 @@ def mute_warm_reds(image, strength=0.55):
     return image
 
 
+def blend_ink_fragment(canvas, source, polygon, opacity=96, blur_radius=150):
+    """Blend a secondary scene through a soft irregular ink-wash mask."""
+    fragment = cover_resize(source.convert("RGB"), canvas.size)
+    fragment = ImageEnhance.Contrast(fragment).enhance(0.92)
+    fragment = ImageEnhance.Color(fragment).enhance(0.42)
+    fragment = ImageEnhance.Brightness(fragment).enhance(1.02)
+    fragment = mute_warm_reds(fragment, strength=0.72).convert("RGBA")
+
+    mask = Image.new("L", canvas.size, 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.polygon(polygon, fill=opacity)
+    mask = mask.filter(ImageFilter.GaussianBlur(blur_radius))
+    return Image.composite(fragment, canvas.convert("RGBA"), mask)
+
+
 def add_right_paper_wash(image):
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     pixels = overlay.load()
@@ -313,11 +328,11 @@ def compose_work(item):
     ink = (28, 27, 24, 244)
     muted = (75, 68, 58, 220)
     mark_colors = {
-        "鸟鸣": (92, 105, 88, 205),
-        "钟声": (122, 104, 73, 205),
-        "猿啼": (72, 84, 91, 205),
-        "人语回响": (77, 91, 82, 205),
-        "夜雨": (68, 86, 99, 205),
+        "鸟鸣": (92, 105, 88, 148),
+        "钟声": (122, 104, 73, 148),
+        "猿啼": (72, 84, 91, 148),
+        "人语回响": (77, 91, 82, 148),
+        "夜雨": (68, 86, 99, 148),
     }
 
     title_x = 1275
@@ -326,8 +341,8 @@ def compose_work(item):
     draw_vertical(draw, author, 1178, title_end + 64, meta_font, muted, gap=8)
     draw_soundscape_mark(
         canvas,
-        (1092, 178),
-        92,
+        (1102, 184),
+        78,
         mark_colors.get(item["sound"], (88, 91, 80, 145)),
         width=2,
     )
@@ -379,7 +394,35 @@ def create_a3_poster(work_paths):
         Image.open(str(SOURCE_DIR / item["source"])).convert("RGB")
         for item in SERIES
     ]
-    canvas = cover_resize(sources[2], A3_SIZE)
+    canvas = cover_resize(sources[2], A3_SIZE).convert("RGBA")
+    canvas = blend_ink_fragment(
+        canvas,
+        sources[0],
+        [(0, 0), (1380, 0), (2050, 720), (1630, 1320), (560, 1260), (0, 920)],
+        opacity=88,
+        blur_radius=165,
+    )
+    canvas = blend_ink_fragment(
+        canvas,
+        sources[1],
+        [(0, 1080), (780, 930), (1940, 1430), (2150, 2050), (1180, 2260), (0, 1950)],
+        opacity=82,
+        blur_radius=170,
+    )
+    canvas = blend_ink_fragment(
+        canvas,
+        sources[3],
+        [(0, 2250), (840, 2100), (2050, 2630), (2180, 3430), (980, 3630), (0, 3260)],
+        opacity=90,
+        blur_radius=175,
+    )
+    canvas = blend_ink_fragment(
+        canvas,
+        sources[4],
+        [(0, 3440), (980, 3300), (2180, 3820), (2350, 4961), (0, 4961)],
+        opacity=92,
+        blur_radius=180,
+    )
     canvas = ImageEnhance.Contrast(canvas).enhance(0.94)
     canvas = ImageEnhance.Color(canvas).enhance(0.48)
     canvas = ImageEnhance.Brightness(canvas).enhance(0.96)
@@ -416,9 +459,9 @@ def create_a3_poster(work_paths):
         )
     draw_soundscape_mark(
         canvas,
-        (2920, 4050),
-        260,
-        (75, 84, 79, 92),
+        (2940, 4095),
+        205,
+        (75, 84, 79, 72),
         width=3,
     )
 
