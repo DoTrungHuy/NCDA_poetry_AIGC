@@ -1,11 +1,11 @@
 {
-  "title": "声入诗境",
+  "title": "声入诗境：诗词声音的AIGC视觉转译",
   "category": "NCDA 1-L1 AIGC-图片类",
-  "generated_at": "2026-06-12T00:57:04",
+  "generated_at": "2026-06-12T20:23:57",
   "deliverables": [
     {
       "path": "submission/works/01_春晓.jpg",
-      "bytes": 919273,
+      "bytes": 907066,
       "width": 1440,
       "height": 2160,
       "dpi": [
@@ -15,7 +15,7 @@
     },
     {
       "path": "submission/works/02_枫桥夜泊.jpg",
-      "bytes": 915932,
+      "bytes": 907049,
       "width": 1440,
       "height": 2160,
       "dpi": [
@@ -25,7 +25,7 @@
     },
     {
       "path": "submission/works/03_早发白帝城.jpg",
-      "bytes": 883446,
+      "bytes": 884642,
       "width": 1440,
       "height": 2160,
       "dpi": [
@@ -35,7 +35,7 @@
     },
     {
       "path": "submission/works/04_鹿柴.jpg",
-      "bytes": 987272,
+      "bytes": 981501,
       "width": 1440,
       "height": 2160,
       "dpi": [
@@ -45,7 +45,7 @@
     },
     {
       "path": "submission/works/05_夜雨寄北.jpg",
-      "bytes": 980029,
+      "bytes": 961094,
       "width": 1440,
       "height": 2160,
       "dpi": [
@@ -55,7 +55,7 @@
     },
     {
       "path": "submission/a3_poster.jpg",
-      "bytes": 2839666,
+      "bytes": 2945902,
       "width": 3508,
       "height": 4961,
       "dpi": [
@@ -65,19 +65,19 @@
     },
     {
       "path": "submission/process/creation_process.pdf",
-      "bytes": 1999414
+      "bytes": 1978725
     },
     {
       "path": "submission/PLATFORM_COPY.md",
-      "bytes": 1450
+      "bytes": 1735
     },
     {
       "path": "submission/video/narration_script.md",
-      "bytes": 1036
+      "bytes": 1048
     },
     {
       "path": "submission/video/声入诗境_宣讲视频.mp4",
-      "bytes": 5881238
+      "bytes": 5808967
     }
   ],
   "series": [
@@ -114,7 +114,7 @@
       "poem": "朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",
       "source": "03_gorge_echo.png",
       "concept": "猿啼被转译为峡谷间反复折返的断续墨线，与轻舟形成速度对比。",
-      "palette": "晨金 / 石青 / 墨灰 / 朱砂",
+      "palette": "晨金 / 石青 / 墨灰 / 雾金",
       "prompt": "Tiny ancient boat moving swiftly through the Three Gorges at dawn, layered cliffs, hidden gibbons suggested by elongated broken ink echoes traveling between canyon walls."
     },
     {

@@ -10,7 +10,8 @@ NCDA 提交前合规检查脚本。
 3. A3 宣传海报是否为 3508x4961、300dpi、JPG 且不超过 5MB；
 4. 创作过程 PDF、宣讲视频、平台文案与提交清单是否存在；
 5. 视频是否为可读取的 MP4，且不超过 3 分钟和 300MB；
-6. 文件名中是否明显包含作者、学校等匿名评审不建议出现的信息。
+6. 平台作品名、设计说明、标签与工具数量是否符合表单限制；
+7. 文件名或可读取内容中是否包含匿名评审不建议出现的信息。
 
 注意：脚本只能检查文件结构与尺寸，不能替代人工审查画面内容。
 """
@@ -30,6 +31,10 @@ MAX_VIDEO_MB = 300
 MAX_VIDEO_SECONDS = 180
 A3_SIZE = (3508, 4961)  # 297mm x 420mm at 300dpi
 A3_TOLERANCE = 80
+MAX_TITLE_CHARS = 20
+MAX_DESCRIPTION_CHARS = 500
+MAX_TAGS = 3
+MAX_TOOLS = 5
 
 
 def size_mb(path: Path) -> float:
@@ -74,6 +79,76 @@ def check_forbidden_names(paths: List[Path], forbidden_terms: List[str]) -> List
     return warnings
 
 
+def check_forbidden_content(paths: List[Path], forbidden_terms: List[str]) -> List[str]:
+    warnings = []
+    terms = [term.strip() for term in forbidden_terms if term.strip()]
+    if not terms:
+        return warnings
+    for path in paths:
+        try:
+            payload = path.read_bytes()
+        except OSError:
+            continue
+        for term in terms:
+            variants = [term.encode("utf-8")]
+            try:
+                variants.append(term.encode("utf-16le"))
+                variants.append(term.encode("ascii"))
+            except UnicodeEncodeError:
+                pass
+            if any(variant and variant in payload for variant in variants):
+                warnings.append(f"文件内容可能包含匿名敏感词“{term}”：{path}")
+    return warnings
+
+
+def section_text(text: str, heading: str, next_heading: Optional[str] = None) -> str:
+    marker = "## " + heading
+    if marker not in text:
+        return ""
+    value = text.split(marker, 1)[1]
+    if next_heading:
+        next_marker = "## " + next_heading
+        if next_marker in value:
+            value = value.split(next_marker, 1)[0]
+    return value.strip()
+
+
+def validate_platform_copy(path: Path) -> List[str]:
+    errors = []
+    text = path.read_text(encoding="utf-8")
+    title = section_text(text, "作品名称", "设计说明").replace("\n", "").strip()
+    description = "".join(section_text(text, "设计说明", "作品寓意").split())
+    website_fields = section_text(text, "网站字段", "匿名检查")
+
+    if not title:
+        errors.append("平台文案缺少作品名称。")
+    elif len(title) > MAX_TITLE_CHARS:
+        errors.append(f"作品名称超过 {MAX_TITLE_CHARS} 字：当前 {len(title)} 字。")
+    else:
+        print(f"[OK] 作品名称：{title} ({len(title)}字)")
+
+    if not description:
+        errors.append("平台文案缺少设计说明。")
+    elif len(description) > MAX_DESCRIPTION_CHARS:
+        errors.append(f"设计说明超过 {MAX_DESCRIPTION_CHARS} 字：当前 {len(description)} 字。")
+    else:
+        print(f"[OK] 设计说明长度：{len(description)} 字")
+
+    tags_line = next((line for line in website_fields.splitlines() if "标签：" in line), "")
+    tools_line = next((line for line in website_fields.splitlines() if "使用工具：" in line), "")
+    tags = [item.strip() for item in tags_line.split("：", 1)[-1].replace("；", ";").split(";") if item.strip()]
+    tools = [item.strip() for item in tools_line.split("：", 1)[-1].replace("；", ";").split(";") if item.strip()]
+    if len(tags) > MAX_TAGS:
+        errors.append(f"标签超过 {MAX_TAGS} 个：当前 {len(tags)} 个。")
+    elif tags:
+        print(f"[OK] 标签数量：{len(tags)} 个")
+    if len(tools) > MAX_TOOLS:
+        errors.append(f"使用工具超过 {MAX_TOOLS} 个：当前 {len(tools)} 个。")
+    elif tools:
+        print(f"[OK] 使用工具数量：{len(tools)} 个")
+    return errors
+
+
 def detect_layout(root: Path) -> Dict[str, Optional[Path]]:
     if (root / "a3_poster.jpg").exists():
         return {
@@ -111,7 +186,13 @@ def probe_video(path: Path) -> Tuple[bool, str]:
         str(path),
     ]
     try:
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        result = subprocess.run(
+            command,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
         payload = json.loads(result.stdout)
         duration = float(payload.get("format", {}).get("duration", 0))
         streams = payload.get("streams", [])
@@ -201,6 +282,7 @@ def main() -> int:
         errors.append("缺少平台投稿文案。")
     else:
         print(f"[OK] 平台投稿文案：{platform_copy.name}")
+        errors.extend(validate_platform_copy(platform_copy))
 
     if video_script and not video_script.exists():
         errors.append("缺少宣讲视频文稿。")
@@ -242,6 +324,7 @@ def main() -> int:
         if optional_path and optional_path.exists():
             checked_paths.append(optional_path)
     warnings.extend(check_forbidden_names(checked_paths, args.forbidden))
+    warnings.extend(check_forbidden_content(checked_paths, args.forbidden))
 
     if warnings:
         print("\n[WARN] 需要人工确认：")

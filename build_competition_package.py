@@ -18,6 +18,7 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent
 SOURCE_DIR = ROOT / "assets" / "series_sources"
+MARK_PATH = ROOT / "assets" / "images" / "soundscape_mark.png"
 SUBMISSION_DIR = ROOT / "submission"
 WORKS_DIR = SUBMISSION_DIR / "works"
 PROCESS_DIR = SUBMISSION_DIR / "process"
@@ -33,6 +34,7 @@ MAX_JPG_BYTES = 5 * 1024 * 1024
 
 SERIES_TITLE = "声入诗境"
 SERIES_SUBTITLE = "古典诗词中不可见声音的 AIGC 视觉转译"
+PLATFORM_TITLE = "声入诗境：诗词声音的AIGC视觉转译"
 SERIES_STATEMENT = (
     "作品选取鸟鸣、钟声、猿啼、人语回响与夜雨五种声音，"
     "以声波的扩散、回返、叠加和消隐作为构图规则，将听觉经验转译为东方空间。"
@@ -43,7 +45,7 @@ NARRATION_TEXT = """古典诗词不仅可以被阅读，也可以被聆听。
 
 这些声音没有固定形体，却能够建立空间、推动时间并唤起情绪。因此，作品没有直接描绘声音来源，而是把扩散、回返、断续、叠加和消隐转化为画面的构图规则。
 
-创作首先通过大语言模型拆解诗词中的声音、场景和情绪，再以统一的当代水墨语言生成无文字底图。人工筛选之后，进一步统一色彩、宣纸质感与声音线索，并使用传统竖排和朱砂印章建立系列视觉系统。
+创作首先通过大语言模型拆解诗词中的声音、场景和情绪，再以统一的当代水墨语言生成无文字底图。人工筛选之后，进一步统一色彩、宣纸质感与声音线索，并使用传统竖排和一笔连续水墨印记建立系列视觉系统。
 
 从春晓的湿润微光，到枫桥夜泊的寒钟；从三峡猿声的折返，到鹿柴空山的回响；最后落入巴山夜雨与窗灯之间的等待。
 
@@ -90,7 +92,7 @@ SERIES = [
         "poem": "朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",
         "source": "03_gorge_echo.png",
         "concept": "猿啼被转译为峡谷间反复折返的断续墨线，与轻舟形成速度对比。",
-        "palette": "晨金 / 石青 / 墨灰 / 朱砂",
+        "palette": "晨金 / 石青 / 墨灰 / 雾金",
         "prompt": (
             "Tiny ancient boat moving swiftly through the Three Gorges at dawn, layered cliffs, "
             "hidden gibbons suggested by elongated broken ink echoes traveling between canyon walls."
@@ -233,6 +235,44 @@ def draw_vertical_clauses(draw, poem, start_x, start_y, font, fill, col_gap):
         x -= col_gap
 
 
+def draw_soundscape_mark(image, xy, size, color, width=3):
+    """Place the generated one-stroke listening-and-poetry emblem."""
+    rgba = color if len(color) == 4 else color + (255,)
+    source = Image.open(str(MARK_PATH)).convert("RGBA")
+    alpha = source.split()[3]
+    bounds = alpha.getbbox()
+    if bounds:
+        source = source.crop(bounds)
+        alpha = source.split()[3]
+    width_px = max(1, int(size * source.width / float(source.height)))
+    resampling = getattr(Image, "Resampling", Image)
+    alpha = alpha.resize((width_px, size), resampling.LANCZOS)
+    opacity = rgba[3] / 255.0
+    alpha = alpha.point(lambda value: int(value * opacity))
+    mark = Image.new("RGBA", (width_px, size), rgba[:3] + (0,))
+    mark.putalpha(alpha)
+    destination = (int(xy[0]), int(xy[1]))
+    if image.mode == "RGBA":
+        image.alpha_composite(mark, dest=destination)
+    else:
+        image.paste(mark, destination, mark)
+
+
+def mute_warm_reds(image, strength=0.55):
+    """Quiet red foliage so it cannot read as a graphic accent."""
+    image = image.convert("RGB")
+    pixels = image.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            red, green, blue = pixels[x, y]
+            if red > green * 1.12 and red > blue * 1.08 and red > 70:
+                target = int((green + blue) / 2.0)
+                red = int(red * (1.0 - strength) + target * strength)
+                green = int(green * (1.0 - strength * 0.22) + target * strength * 0.22)
+                pixels[x, y] = (red, green, blue)
+    return image
+
+
 def add_right_paper_wash(image):
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     pixels = overlay.load()
@@ -261,27 +301,36 @@ def compose_work(item):
 
     base = cover_resize(Image.open(str(source_path)).convert("RGB"), WORK_SIZE)
     base = ImageEnhance.Contrast(base).enhance(1.04)
-    base = ImageEnhance.Color(base).enhance(0.92)
+    base = ImageEnhance.Color(base).enhance(0.84)
+    base = mute_warm_reds(base, strength=0.62)
     canvas = add_right_paper_wash(base)
     draw = ImageDraw.Draw(canvas)
 
     title_font = load_font(CALLIGRAPHY_FONT, 88)
     body_font = load_font(CALLIGRAPHY_FONT, 47)
     meta_font = load_font(TEXT_FONT, 28)
-    number_font = load_font(LATIN_FONT, 25)
-    seal_font = load_font(TEXT_FONT, 28)
 
     ink = (28, 27, 24, 244)
     muted = (75, 68, 58, 220)
-    cinnabar = (151, 37, 29, 245)
-
-    draw.text((92, 86), "{}/05".format(item["index"]), font=number_font, fill=(235, 229, 216, 210))
-    draw.text((92, 126), SERIES_TITLE, font=meta_font, fill=(235, 229, 216, 210))
+    mark_colors = {
+        "鸟鸣": (92, 105, 88, 205),
+        "钟声": (122, 104, 73, 205),
+        "猿啼": (72, 84, 91, 205),
+        "人语回响": (77, 91, 82, 205),
+        "夜雨": (68, 86, 99, 205),
+    }
 
     title_x = 1275
     title_end = draw_vertical(draw, item["title"], title_x, 170, title_font, ink, gap=14)
     author = "〔{}〕{}".format(item["dynasty"], item["author"])
     draw_vertical(draw, author, 1178, title_end + 64, meta_font, muted, gap=8)
+    draw_soundscape_mark(
+        canvas,
+        (1092, 178),
+        92,
+        mark_colors.get(item["sound"], (88, 91, 80, 145)),
+        width=2,
+    )
 
     draw_vertical_clauses(
         draw,
@@ -292,18 +341,6 @@ def compose_work(item):
         fill=ink,
         col_gap=72,
     )
-
-    seal_x, seal_y, seal_size = 1188, 1830, 130
-    draw.rectangle((seal_x, seal_y, seal_x + seal_size, seal_y + seal_size), fill=cinnabar)
-    sound_chars = item["sound"][:2]
-    if len(sound_chars) == 1:
-        sound_chars += "声"
-    draw.text((seal_x + 22, seal_y + 15), sound_chars[0], font=seal_font, fill=(247, 239, 221, 255))
-    draw.text((seal_x + 73, seal_y + 70), sound_chars[1], font=seal_font, fill=(247, 239, 221, 255))
-
-    draw.line((1050, 1992, 1318, 1992), fill=(132, 102, 66, 150), width=2)
-    draw.text((1052, 2015), item["sound"], font=meta_font, fill=muted)
-    draw.text((1052, 2060), "听觉转译 · {}".format(item["index"]), font=meta_font, fill=muted)
 
     output = WORKS_DIR / "{}_{}.jpg".format(item["index"], item["title"])
     save_jpeg_under_limit(canvas, output)
@@ -338,56 +375,52 @@ def draw_wrapped(draw, text, xy, font, fill, max_width, line_gap=18, max_lines=N
 
 
 def create_a3_poster(work_paths):
-    canvas = Image.new("RGB", A3_SIZE, (235, 229, 215))
+    sources = [
+        Image.open(str(SOURCE_DIR / item["source"])).convert("RGB")
+        for item in SERIES
+    ]
+    canvas = cover_resize(sources[2], A3_SIZE)
+    canvas = ImageEnhance.Contrast(canvas).enhance(0.94)
+    canvas = ImageEnhance.Color(canvas).enhance(0.48)
+    canvas = ImageEnhance.Brightness(canvas).enhance(0.96)
+    canvas = mute_warm_reds(canvas, strength=0.72)
+    canvas = canvas.convert("RGBA")
     draw = ImageDraw.Draw(canvas)
+
+    ink = (28, 26, 23, 255)
+    muted = (82, 68, 52, 240)
     title_font = load_font(CALLIGRAPHY_FONT, 245)
-    subtitle_font = load_font(TEXT_FONT, 72)
-    body_font = load_font(TEXT_FONT, 48)
-    small_font = load_font(TEXT_FONT, 38)
-    latin_font = load_font(LATIN_FONT, 34)
+    subtitle_font = load_font(TEXT_FONT, 62)
+    label_font = load_font(TEXT_FONT, 42)
 
-    strip_top = 250
-    strip_height = 2730
-    strip_width = 590
-    gap = 22
-    total_width = len(work_paths) * strip_width + (len(work_paths) - 1) * gap
-    start_x = (A3_SIZE[0] - total_width) // 2
-
-    for idx, work_path in enumerate(work_paths):
-        image = Image.open(str(work_path)).convert("RGB")
-        crop = cover_resize(image, (strip_width, strip_height))
-        x = start_x + idx * (strip_width + gap)
-        canvas.paste(crop, (x, strip_top))
-        draw_rect_outline(
-            draw,
-            (x, strip_top, x + strip_width, strip_top + strip_height),
-            (97, 82, 64),
-            width=3,
-        )
-
-    ink = (28, 26, 23)
-    muted = (86, 72, 57)
-    red = (148, 35, 27)
-    draw.text((230, 3160), SERIES_TITLE, font=title_font, fill=ink)
-    draw.text((252, 3450), SERIES_SUBTITLE, font=subtitle_font, fill=muted)
-    draw_wrapped(draw, SERIES_STATEMENT, (252, 3605), body_font, ink, 3030, line_gap=26, max_lines=3)
-
-    draw.line((252, 4140, 3256, 4140), fill=(146, 116, 76), width=4)
-    labels = "鸟鸣 · 钟声 · 猿啼 · 人语回响 · 夜雨"
-    draw.text((252, 4220), labels, font=subtitle_font, fill=ink)
-    draw.text(
-        (252, 4355),
-        "LLM意象分析 / AIGC图像生成 / 声音结构映射 / 人工筛选与程序化排版",
-        font=small_font,
-        fill=muted,
+    draw_vertical(draw, SERIES_TITLE, 2970, 620, title_font, ink, gap=22)
+    draw_vertical(
+        draw,
+        "让不可见的声音穿过五重诗境",
+        2665,
+        690,
+        subtitle_font,
+        muted,
+        gap=12,
     )
-    draw.text((252, 4450), "NCDA 1-L1 AIGC-图片类", font=small_font, fill=muted)
-
-    seal = (2915, 4240, 3255, 4580)
-    draw_rect_outline(draw, seal, red, width=13)
-    seal_font = load_font(CALLIGRAPHY_FONT, 92)
-    draw.text((2982, 4292), "声入", font=seal_font, fill=red)
-    draw.text((2982, 4405), "诗境", font=seal_font, fill=red)
+    sounds = ["鸟鸣", "钟声", "猿啼", "人语回响", "夜雨"]
+    for index, sound in enumerate(sounds):
+        draw_vertical(
+            draw,
+            sound,
+            3020 - index * 155,
+            2900,
+            label_font,
+            ink if index in (0, 4) else muted,
+            gap=9,
+        )
+    draw_soundscape_mark(
+        canvas,
+        (2920, 4050),
+        260,
+        (75, 84, 79, 92),
+        width=3,
+    )
 
     save_jpeg_under_limit(canvas, A3_PATH)
     return A3_PATH
@@ -411,7 +444,7 @@ def create_process_pdf(work_paths):
     pages = []
     ink = (32, 29, 25)
     muted = (92, 78, 61)
-    red = (148, 35, 27)
+    accent = (104, 105, 88)
     title_font = load_font(CALLIGRAPHY_FONT, 165)
     heading_font = load_font(TEXT_FONT, 54)
     body_font = load_font(TEXT_FONT, 34)
@@ -421,13 +454,19 @@ def create_process_pdf(work_paths):
     # 1. Cover
     page = pdf_page()
     draw = ImageDraw.Draw(page)
-    cover = cover_resize(Image.open(str(work_paths[1])).convert("RGB"), (1514, 1380))
-    page.paste(cover, (120, 120))
-    draw_rect_outline(draw, (120, 120, 1634, 1500), (117, 94, 66), width=3)
-    draw.text((120, 1645), SERIES_TITLE, font=title_font, fill=ink)
-    draw.text((130, 1845), SERIES_SUBTITLE, font=heading_font, fill=muted)
-    draw_wrapped(draw, SERIES_STATEMENT, (130, 1990), body_font, ink, 1470, line_gap=22, max_lines=4)
-    draw.text((130, 2300), "NCDA 1-L1 AIGC-图片类 · 创作过程说明", font=small_font, fill=red)
+    cover = fit_resize(Image.open(str(A3_PATH)).convert("RGB"), (920, 1300))
+    page.paste(cover, (714, 105))
+    draw_rect_outline(
+        draw,
+        (714, 105, 714 + cover.width, 105 + cover.height),
+        (117, 94, 66),
+        width=3,
+    )
+    draw_soundscape_mark(page, (130, 170), 250, accent + (220,), width=5)
+    draw.text((120, 620), SERIES_TITLE, font=title_font, fill=ink)
+    draw.text((130, 830), SERIES_SUBTITLE, font=heading_font, fill=muted)
+    draw_wrapped(draw, SERIES_STATEMENT, (130, 990), body_font, ink, 520, line_gap=22, max_lines=8)
+    draw.text((130, 2225), "AIGC-图片类 · 创作过程说明", font=small_font, fill=accent)
     pages.append(page)
 
     # 2. Concept
@@ -444,7 +483,7 @@ def create_process_pdf(work_paths):
     draw.text((120, y + 85), "五种声音 / 五种空间机制", font=heading_font, fill=ink)
     y += 190
     for item in SERIES:
-        draw.rectangle((120, y, 260, y + 68), fill=red)
+        draw.rectangle((120, y, 260, y + 68), fill=accent)
         draw.text((148, y + 12), item["sound"], font=small_font, fill=(248, 241, 225))
         draw.text((310, y + 10), "{} · {}".format(item["title"], item["concept"]), font=small_font, fill=ink)
         y += 115
@@ -458,13 +497,13 @@ def create_process_pdf(work_paths):
     rules = [
         "构图：左侧具象空间承载诗境，右侧宣纸留白承载诗文与余韵。",
         "媒介：当代水墨、矿物色、数字绘景与宣纸纤维共同构成。",
-        "声音：不使用喇叭或波形图标，以墨痕、涟漪、错位轮廓和雨线表达。",
+        "声音：以涟漪、断线、回声弧与雨线表达五种不同传播方式。",
         "文字：传统右起竖排；标题、作者、诗句形成三级信息层。",
-        "色彩：每张保留独立情绪色，同时统一墨灰、暖白与朱砂识别点。",
+        "色彩：每张保留独立情绪色，以灰青、雾金和墨色形成自然识别。",
     ]
     y = 390
     for number, rule in enumerate(rules, 1):
-        draw.text((135, y), "{:02d}".format(number), font=latin_font, fill=red)
+        draw.text((135, y), "{:02d}".format(number), font=latin_font, fill=accent)
         y = draw_wrapped(draw, rule, (230, y), body_font, ink, 1360, line_gap=18, max_lines=2) + 35
     draw.text((120, y + 40), "色谱", font=heading_font, fill=ink)
     swatches = [
@@ -472,13 +511,42 @@ def create_process_pdf(work_paths):
         ((71, 72, 68), "墨灰"),
         ((95, 116, 105), "豆青"),
         ((65, 77, 88), "靛青"),
-        ((151, 37, 29), "朱砂"),
+        ((126, 116, 88), "雾金"),
     ]
     x = 120
     for color, label in swatches:
         draw.rectangle((x, y + 155, x + 245, y + 340), fill=color)
         draw.text((x, y + 360), label, font=small_font, fill=ink)
         x += 300
+    draw.text((120, y + 470), "声境印记与版式减法", font=heading_font, fill=ink)
+    draw_soundscape_mark(page, (125, y + 580), 210, accent + (220,), width=5)
+    draw_wrapped(
+        draw,
+        "印记采用一笔连续水墨造型，通过负空间同时暗示倾听与展开的诗卷，不使用文字、"
+        "花瓣、声波或几何边框。新版删除左上角序号、右下角标签和说明线，只保留诗文、留白与印记，"
+        "让视觉重心回到诗境本身。",
+        (390, y + 585),
+        body_font,
+        ink,
+        1190,
+        line_gap=22,
+        max_lines=5,
+    )
+    draw.text((390, y + 810), "删减前：序号 + 系列名 + 声音标签 + 编号说明", font=small_font, fill=muted)
+    draw.text((390, y + 875), "删减后：诗文 + 声音轨迹 + 声境印记", font=small_font, fill=accent)
+    draw.text((120, y + 1010), "海报构思", font=heading_font, fill=ink)
+    draw_wrapped(
+        draw,
+        "海报以峡江作为唯一主景，不再拼接多幅画面，也不额外叠加声波线。"
+        "标题与核心文案改为右侧竖排，五种声音在下方形成疏密节奏；声境印记"
+        "以一笔连续水墨印记作为视觉落款，避免花瓣、文字、音量键或通用声波图标。",
+        (120, y + 1110),
+        body_font,
+        ink,
+        1480,
+        line_gap=22,
+        max_lines=5,
+    )
     pages.append(page)
 
     # 4. Workflow
@@ -488,15 +556,15 @@ def create_process_pdf(work_paths):
     stages = [
         ("1", "文本研究", "提取声音来源、传播方式、时间、空间与情绪。"),
         ("2", "提示词设计", "限定时代、场景、构图、色谱、媒介和禁用项。"),
-        ("3", "图像生成", "生成无文字底图，并为右侧竖排预留结构性留白。"),
+        ("3", "图像生成", "使用 OpenAI 图像生成能力制作无文字场景底图。"),
         ("4", "人工筛选", "检查诗意准确性、系列一致性、建筑与器物合理性。"),
         ("5", "视觉后期", "统一色调、对比度、宣纸质感与声音视觉线索。"),
-        ("6", "程序排版", "使用 Python/Pillow 完成竖排、印章、规格和压缩。"),
+        ("6", "程序排版", "使用 Codex、Python/Pillow 完成竖排、印记、海报和压缩。"),
         ("7", "提交检查", "检查5张套图、A3、PDF、视频、匿名信息和文件大小。"),
     ]
     y = 305
     for number, name, detail in stages:
-        draw.ellipse((125, y, 220, y + 95), fill=red)
+        draw.ellipse((125, y, 220, y + 95), fill=accent)
         draw.text((157, y + 22), number, font=small_font, fill=(248, 241, 225))
         draw.text((270, y), name, font=heading_font, fill=ink)
         draw_wrapped(draw, detail, (270, y + 72), body_font, muted, 1290, line_gap=15, max_lines=2)
@@ -527,7 +595,7 @@ def create_process_pdf(work_paths):
             draw.text((text_x, y + 85), item["poem"], font=small_font, fill=muted)
             draw_wrapped(draw, "转译逻辑：{}".format(item["concept"]), (text_x, y + 145), body_font, ink, 850, line_gap=18, max_lines=4)
             prompt_y = y + 340
-            draw.text((text_x, prompt_y), "Prompt excerpt", font=latin_font, fill=red)
+            draw.text((text_x, prompt_y), "Prompt excerpt", font=latin_font, fill=accent)
             draw_wrapped(draw, item["prompt"], (text_x, prompt_y + 50), latin_font, muted, 850, line_gap=14, max_lines=8)
             draw.text((text_x, y + 690), "色谱：{}".format(item["palette"]), font=small_font, fill=ink)
             y += 1020
@@ -539,8 +607,8 @@ def create_process_pdf(work_paths):
     page_header(draw, 8, "05  原创说明与交付清单")
     draw.text((120, 290), "人工设计介入", font=heading_font, fill=ink)
     disclosure = (
-        "AIGC 负责生成无文字场景底图；主题策划、诗词选择、声音转译规则、候选筛选、"
-        "色彩统一、竖排系统、印章、系列海报、过程编排和提交规格均由人工完成。"
+        "底图由 OpenAI 图像生成能力辅助完成；主题策划、诗词选择、候选筛选、构图、"
+        "色彩、字体、声音轨迹、声境印记、系列海报、过程编排和提交规格均由人工完成。"
         "所有古诗均属于公有领域；生成图中未使用真实人物身份、商业品牌或第三方赛事标识。"
     )
     y = draw_wrapped(draw, disclosure, (120, 400), body_font, ink, 1490, line_gap=24)
@@ -555,12 +623,16 @@ def create_process_pdf(work_paths):
     ]
     y += 205
     for item in checklist:
-        draw_rect_outline(draw, (130, y + 4, 165, y + 39), red, width=3)
+        draw_rect_outline(draw, (130, y + 4, 165, y + 39), accent, width=3)
         draw.text((205, y), item, font=body_font, fill=ink)
         y += 105
     draw.text((120, 2240), "生成日期：{}".format(datetime.now().strftime("%Y-%m-%d")), font=small_font, fill=muted)
     pages.append(page)
 
+    # Pillow 5.x does not initialize encoder state for appended PDF pages.
+    for pdf_image in pages:
+        pdf_image.encoderinfo = {}
+        pdf_image.encoderconfig = ()
     pages[0].save(
         str(PDF_PATH),
         "PDF",
@@ -573,19 +645,19 @@ def create_process_pdf(work_paths):
 
 def create_platform_copy():
     path = SUBMISSION_DIR / "PLATFORM_COPY.md"
-    text = """# NCDA 平台投稿文案
+    text = f"""# NCDA 平台投稿文案
 
 ## 作品名称
 
-声入诗境——古典诗词中不可见声音的 AIGC 视觉转译
+{PLATFORM_TITLE}
 
 ## 设计说明
 
 《声入诗境》选取《春晓》《枫桥夜泊》《早发白帝城》《鹿柴》《夜雨寄北》五首诗，
-从鸟鸣、钟声、猿啼、人语回响与夜雨五种声音出发，将声音的扩散、回返、断续、
-叠加与消隐转化为画面构图。作品使用大语言模型进行诗词意象拆解，以 AIGC 生成
-无文字场景底图，再由人工完成筛选、色彩统一、声音结构强化和传统竖排系统设计，
-形成具有当代视角的东方诗性系列。
+把鸟鸣、钟声、猿啼、人语回响与夜雨的扩散、回返、断续、叠加和消隐转化为构图。
+底图由 OpenAI 图像生成能力辅助完成，主题策划、诗词筛选、构图、色彩、字体、
+声音轨迹、原创“声境印记”、海报和提交编排均由人工完成，形成从清晨到深夜、
+从庭院到山水的东方听觉空间。
 
 ## 作品寓意
 
@@ -595,10 +667,19 @@ def create_platform_copy():
 
 ## AIGC 使用说明
 
-- 文本分析：LLM 辅助提取声音、时间、空间、情绪和场景元素。
-- 图像生成：AIGC 生成无文字诗境底图。
-- 人工介入：主题策划、诗词筛选、提示词迭代、候选筛选、调色、排版和提交编排。
-- 后期工具：Python + Pillow。
+- 图像生成：OpenAI 图像生成能力辅助制作无文字诗境底图。
+- 人工介入：主题策划、诗词筛选、提示词迭代、候选筛选、构图、调色、字体、
+  声音轨迹、声境印记、宣传海报和提交编排。
+
+## 网站字段
+
+- 参赛组别：学生-本科
+- 毕业设计作品：否
+- 标签：AIGC；古典诗词；视觉转译
+- 使用工具：OpenAI图像生成；Codex；Python；Pillow；FFmpeg
+- 内容地域：可留空
+- 是否获奖/发表：按实际情况填写；如无则填写“无”
+- 创作时长：按实际投入总小时数填写
 
 ## 匿名检查
 
@@ -631,8 +712,9 @@ def probe_duration(path):
             str(path),
         ],
         check=True,
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     return float(result.stdout.strip())
 
@@ -735,7 +817,7 @@ def create_video(work_paths):
             title_font = load_font(CALLIGRAPHY_FONT, 185)
             subtitle_font = load_font(TEXT_FONT, 52)
             small_font = load_font(TEXT_FONT, 34)
-            red = (151, 42, 32)
+            accent = (111, 111, 92)
             if ending:
                 draw.text((555, 310), "让声音被看见", font=title_font, fill=(239, 231, 214))
                 draw.text((700, 570), SERIES_TITLE, font=subtitle_font, fill=(196, 173, 139))
@@ -748,8 +830,7 @@ def create_video(work_paths):
                     font=small_font,
                     fill=(224, 211, 187),
                 )
-            draw.rectangle((905, 790, 1015, 900), fill=red)
-            draw.text((930, 815), "声", font=small_font, fill=(246, 235, 214))
+            draw_soundscape_mark(slide, (900, 775), 125, accent + (230,), width=4)
         slide_path = slide_dir / "slide_{:02d}.jpg".format(index)
         slide.save(str(slide_path), "JPEG", quality=94, optimize=True)
         return slide_path
@@ -874,7 +955,7 @@ def file_record(path):
 
 def write_manifest(paths):
     manifest = {
-        "title": SERIES_TITLE,
+        "title": PLATFORM_TITLE,
         "category": "NCDA 1-L1 AIGC-图片类",
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "deliverables": [file_record(Path(path)) for path in paths if path],
