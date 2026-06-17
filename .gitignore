@@ -8,3 +8,13 @@ assets/images/temp_bg.png
 assets/images/test_bg.png
 poetry_poster*.jpg
 poetry_poster*_process.json
+
+# Intermediate build artifacts
+pdf_preview/
+review/
+
+# Debug / one-off scripts
+_check_*.py
+_diag.py
+_export_pages.py
+render_review.py
