@@ -161,7 +161,6 @@ python ncda_check.py --dir outputs/ncda_series --forbidden 你的姓名 学校�
 
 ---
 
-
 ## 提交前人工检查
 
 - 系列作品不少于 5 张。
@@ -177,28 +176,13 @@ python ncda_check.py --dir outputs/ncda_series --forbidden 你的姓名 学校�
 
 ```text
 NCDA_poetry_AIGC/
-├── main.py                          # 主生成管线（诗词解析 → 文生图 → 排版）
-├── build_competition_package.py     # NCDA 参赛包构建器（作品、海报、PDF、视频）
-├── build_process_pdf_v2.py          # 创作过程 PDF 生成器（12 页排版）
-├── ncda_check.py                    # NCDA 提交前检查脚本
-├── verify_typesetting.py            # 本地排版验证（不消耗 API）
-├── poems_sample.txt                 # 系列生成示例诗词
-├── requirements.txt                 # Python 依赖
-├── .env.example                     # API 配置模板
-├── NCDA_SUBMISSION_GUIDE.md         # NCDA 参赛提交指南
-├── PROJECT_COMPETITION_ASSESSMENT.md # 参赛评估文档
-├── assets/
-│   ├── fonts/                       # 书法字体
-│   ├── images/                      # 声景标识等图片素材
-│   ├── redesign/                    # 重设计素材
-│   └── series_sources/              # 五首诗的 AIGC 源图
-├── submission/                      # 正式提交成果
-│   ├── works/                       # 5 张系列作品 JPG
-│   ├── a3_poster.jpg                # A3 竖版宣传海报
-│   ├── process/creation_process.pdf # 12 页创作过程说明
-│   ├── video/                       # 宣讲视频 + 解说稿
-│   ├── PLATFORM_COPY.md             # 平台投稿文案
-│   └── submission_manifest.json     # 提交清单
+├── main.py                     # 主生成管线
+├── verify_typesetting.py        # 本地排版验证脚本
+├── ncda_check.py                # NCDA 提交前检查脚本
+├── NCDA_SUBMISSION_GUIDE.md     # NCDA 参赛提交指南
+├── poems_sample.txt             # 系列生成示例诗词
+├── requirements.txt             # Python 依赖
+├── .env.example                 # API 配置模板
 └── README.md
 ```
 

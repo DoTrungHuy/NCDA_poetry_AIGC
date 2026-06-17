@@ -1,7 +1,7 @@
 {
   "title": "声入诗境：诗词声音的AIGC视觉转译",
   "category": "NCDA 1-L1 AIGC-图片类",
-  "generated_at": "2026-06-17T12:10:47",
+  "generated_at": "2026-06-17T11:14:41",
   "deliverables": [
     {
       "path": "submission/works/01_春晓.jpg",
@@ -55,7 +55,7 @@
     },
     {
       "path": "submission/a3_poster.jpg",
-      "bytes": 2815991,
+      "bytes": 2914745,
       "width": 3508,
       "height": 4961,
       "dpi": [
@@ -65,11 +65,11 @@
     },
     {
       "path": "submission/process/creation_process.pdf",
-      "bytes": 1967099
+      "bytes": 6226715
     },
     {
       "path": "submission/PLATFORM_COPY.md",
-      "bytes": 1735
+      "bytes": 1747
     },
     {
       "path": "submission/video/narration_script.md",
