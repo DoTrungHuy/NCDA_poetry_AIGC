@@ -484,6 +484,10 @@ def page_header(draw, page_no, title):
 
 
 def create_process_pdf(work_paths):
+    from build_process_pdf_v2 import build_pdf
+
+    return build_pdf()
+
     pages = []
     ink = (32, 29, 25)
     muted = (92, 78, 61)

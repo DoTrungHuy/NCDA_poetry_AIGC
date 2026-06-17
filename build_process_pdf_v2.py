@@ -80,7 +80,7 @@ FONTS = {
     "kai_sm": load_font(KAI_FONT, 28),
     "latin": load_font(LATIN_FONT, 24),
     "latin_sm": load_font(LATIN_FONT, 18),
-    "prompt": load_font(LATIN_FONT, 20),
+    "prompt": load_font(LATIN_FONT, 29),
 }
 
 
@@ -332,15 +332,15 @@ def make_contents() -> Image.Image:
 
     draw.text((112, 255), "这份过程册回答三个问题", font=FONTS["h1"], fill=INK)
     summary = (
-        "作品如何从古典诗词中的声音出发，经过 AIGC 底图生成、人工筛选、视觉后期与程序化排版，"
-        "最终形成一组可提交的系列视觉作品。"
+        "作品如何从古典诗词中的声音出发，经过 OpenAI GPT 生成无文字诗境底图、人工筛选、"
+        "GPT 辅助 Python + Pillow 代码编辑与程序化排版，最终形成一组可提交的系列视觉作品。"
     )
     draw_wrapped(draw, summary, (112, 340), FONTS["body"], SOFT_INK, 1040, line_gap=17, max_lines=3)
 
     cards = [
         ("01", "为什么做", "选题、声音机制与诗词选择"),
-        ("02", "怎么生成", "工具、Prompt 结构与底图证据"),
-        ("03", "如何成品", "视觉系统、人工介入与提交检查"),
+        ("02", "怎么生成", "OpenAI GPT、Prompt 结构与底图证据"),
+        ("03", "如何成品", "GPT 辅助代码编辑、人工校正与提交检查"),
     ]
     card_y = 530
     card_w = 485
@@ -356,10 +356,10 @@ def make_contents() -> Image.Image:
         ("文档结构", "阅读路径与核心问题", "02"),
         ("选题与问题意识", "声音如何转译为空间", "03"),
         ("系列视觉系统", "色彩、字体、构图与印记", "04"),
-        ("AIGC 工作流", "生成、筛选、后期与合规检查", "05"),
-        ("Prompt 与底图证据", "四层结构和五张源图", "06"),
+        ("AIGC 工作流", "OpenAI GPT、筛选、代码编辑与合规检查", "05"),
+        ("Prompt 与代码证据", "底图 Prompt、五张源图与编辑逻辑", "06"),
         ("作品详解", "五件作品逐页说明", "07-11"),
-        ("原创声明与过程索引", "人工介入、版权与内容对应", "12"),
+        ("原创声明与人工介入", "GPT 辅助边界、版权与人工判断", "12"),
     ]
     y = 930
     draw.text((112, y), "目录", font=FONTS["h1"], fill=INK)
@@ -494,66 +494,132 @@ def make_workflow() -> Image.Image:
     draw_header(page, "03", "AIGC 工作流与人工介入", 5)
     draw = ImageDraw.Draw(page)
 
-    draw.text((112, 255), "从文本到提交成品的七步链路", font=FONTS["h1"], fill=INK)
+    draw.text((112, 255), "设计过程不是生成，而是可控转译", font=FONTS["h1"], fill=INK)
     draw_wrapped(
         draw,
-        "流程的重点不是“生成一张图”，而是持续把诗词语义、声音机制、画面选择和提交规范对齐。",
+        "核心竞争力在于把不可见的声音先转成 OpenAI GPT 底图候选。再用 GPT 辅助代码固化后期规则，最后由人工完成审美校正与提交控制。",
         (112, 345),
         FONTS["body"],
         SOFT_INK,
-        1260,
+        1380,
         line_gap=16,
-        max_lines=2,
+        max_lines=3,
     )
 
-    stages = [
-        ("01", "文本研究", "提取声音来源、传播方式、时间、空间与情绪。", MOSS),
-        ("02", "提示词设计", "限定场景、构图、媒介、色谱与禁用项。", AMBER),
-        ("03", "滚图 / 底图生成", "围绕同一 Prompt 多轮生成无文字诗境底图，避免 UI、Logo 与文字。", INDIGO),
-        ("04", "人工筛选", "判断诗意准确性、系列一致性和器物合理性。", OLIVE),
-        ("05", "视觉后期", "统一色调、宣纸质感、声音轨迹与画面留白。", RUST),
-        ("06", "程序排版", "完成竖排、印记、海报合成、PDF 编排与压缩。", NIGHT),
-        ("07", "合规检查", "检查尺寸、DPI、文件大小、匿名信息与材料一致性。", AMBER),
+    process_cards = [
+        (
+            "01",
+            "OpenAI GPT 生成底图",
+            "把诗词里的声音、空间、时间和情绪写成 Prompt，生成无文字诗境底图候选。",
+            MOSS,
+        ),
+        (
+            "02",
+            "GPT 辅助代码编辑",
+            "用 Python + Pillow 把调色、宣纸留白、声音轨迹、竖排诗文和压缩输出转成可迭代代码。",
+            AMBER,
+        ),
+        (
+            "03",
+            "人工校正与成品控制",
+            "人工选择底图、微调参数、检查版式，再输出 1440x2160 系列图、A3 海报和过程 PDF。",
+            INDIGO,
+        ),
     ]
 
-    x0, y0 = 112, 535
-    col_w, row_h = 730, 290
-    for i, (num, title, detail, color) in enumerate(stages):
-        x = x0 + (i % 2) * (col_w + 70)
-        y = y0 + (i // 2) * row_h
-        rounded(draw, (x, y, x + col_w, y + 220), radius=8, fill=PAPER_LIGHT, outline=(212, 195, 160), width=2)
-        draw.rectangle((x, y, x + 100, y + 220), fill=color)
-        draw.text((x + 24, y + 28), num, font=FONTS["latin"], fill=PAPER_LIGHT)
-        draw.text((x + 138, y + 28), title, font=FONTS["h2"], fill=INK)
-        draw_wrapped(draw, detail, (x + 138, y + 98), FONTS["body_sm"], MUTED, col_w - 180, line_gap=12, max_lines=3)
-        if i < len(stages) - 1:
-            if i % 2 == 0:
-                draw.line((x + col_w + 10, y + 110, x + col_w + 54, y + 110), fill=HAIRLINE, width=4)
-                draw.polygon([(x + col_w + 54, y + 110), (x + col_w + 38, y + 100), (x + col_w + 38, y + 120)], fill=HAIRLINE)
-            else:
-                draw.line((x - col_w - 35, y + 220, x - col_w - 35, y + 272), fill=HAIRLINE, width=4)
-                draw.polygon([(x - col_w - 35, y + 272), (x - col_w - 45, y + 256), (x - col_w - 25, y + 256)], fill=HAIRLINE)
+    card_y = 500
+    card_w = 462
+    card_h = 840
+    card_gap = 53
+    for i, (num, title, detail, color) in enumerate(process_cards):
+        x = 112 + i * (card_w + card_gap)
+        rounded(draw, (x, card_y, x + card_w, card_y + card_h), radius=8, fill=PAPER_LIGHT, outline=(212, 195, 160), width=2)
+        draw.rectangle((x, card_y, x + card_w, card_y + 92), fill=color)
+        draw.text((x + 28, card_y + 24), num, font=FONTS["latin"], fill=PAPER_LIGHT)
+        draw.text((x + 96, card_y + 18), title, font=FONTS["h3"], fill=PAPER_LIGHT)
+        draw_wrapped(draw, detail, (x + 30, card_y + 125), FONTS["body_sm"], SOFT_INK, card_w - 60, line_gap=12, max_lines=4)
 
-    alpha_box(page, (112, 2032, PDF_W - 112, 2245), fill=(234, 225, 204), alpha=215, radius=8, outline=(205, 185, 146))
+        if i == 0:
+            thumb_items = [SERIES[0], SERIES[2], SERIES[4]]
+            for j, item in enumerate(thumb_items):
+                img = fit_resize(Image.open(str(source_path(item))).convert("RGB"), (112, 168))
+                ix = x + 32 + j * 138
+                iy = card_y + 360
+                paste_image_with_outline(page, img, (ix, iy), outline=(181, 160, 123), width=2)
+                draw.text((ix, iy + 188), item["index"], font=FONTS["latin_sm"], fill=color)
+            draw_wrapped(draw, "证据重点：保留无文字底图，避开文字、UI 和真实身份信息。", (x + 32, card_y + 625), FONTS["body_sm"], MUTED, card_w - 64, line_gap=10, max_lines=3)
+        elif i == 1:
+            code_box = (x + 32, card_y + 330, x + card_w - 32, card_y + 610)
+            rounded(draw, code_box, radius=8, fill=(238, 232, 216), outline=(205, 185, 146), width=1)
+            code_lines = [
+                "img = load(gpt_background)",
+                "img = tune_palette(img)",
+                "img = add_margin_trace(img)",
+                "export_jpg(img, dpi=300)",
+            ]
+            cy = card_y + 360
+            for line in code_lines:
+                draw.text((x + 58, cy), line, font=FONTS["latin"], fill=INDIGO)
+                cy += 52
+            chips = ["调色", "留白", "轨迹", "竖排", "压缩"]
+            for j, chip in enumerate(chips):
+                cx = x + 34 + (j % 3) * 130
+                cy2 = card_y + 655 + (j // 3) * 72
+                rounded(draw, (cx, cy2, cx + 108, cy2 + 48), radius=8, fill=(248, 244, 234), outline=(213, 195, 160), width=1)
+                draw.text((cx + 24, cy2 + 11), chip, font=FONTS["caption"], fill=INK)
+        else:
+            thumb_items = [SERIES[0], SERIES[2], SERIES[4]]
+            for j, item in enumerate(thumb_items):
+                img = fit_resize(Image.open(str(work_path(item))).convert("RGB"), (112, 168))
+                ix = x + 32 + j * 138
+                iy = card_y + 360
+                paste_image_with_outline(page, img, (ix, iy), outline=(142, 119, 82), width=2)
+                draw.text((ix, iy + 188), item["index"], font=FONTS["latin_sm"], fill=color)
+            draw_wrapped(draw, "控制重点：统一规格、留白、竖排层级、声境印记和文件大小。", (x + 32, card_y + 625), FONTS["body_sm"], MUTED, card_w - 64, line_gap=10, max_lines=3)
+
+    for ax in (112 + card_w + 14, 112 + 2 * (card_w + card_gap) - 47):
+        draw.line((ax, card_y + 420, ax + 42, card_y + 420), fill=HAIRLINE, width=4)
+        draw.polygon([(ax + 42, card_y + 420), (ax + 24, card_y + 408), (ax + 24, card_y + 432)], fill=HAIRLINE)
+
+    draw.text((112, 1428), "竞争力体现", font=FONTS["h1"], fill=INK)
+    strengths = [
+        ("可解释", "声音机制 -> Prompt -> 底图 -> 代码参数"),
+        ("可追溯", "底图、Prompt、成品与校正动作逐页对应"),
+        ("可复用", "后期规则写入可复用代码流程"),
+        ("可控", "GPT 给方案，人工定审美和提交规范"),
+    ]
+    strength_w = 350
+    strength_y = 1518
+    for i, (title, detail) in enumerate(strengths):
+        sx = 112 + i * (strength_w + 38)
+        rounded(draw, (sx, strength_y, sx + strength_w, strength_y + 210), radius=8, fill=(248, 244, 234), outline=(213, 195, 160), width=2)
+        draw.text((sx + 26, strength_y + 24), f"{i + 1:02d}", font=FONTS["latin_sm"], fill=[MOSS, AMBER, INDIGO, RUST][i])
+        draw.text((sx + 26, strength_y + 58), title, font=FONTS["h3"], fill=INK)
+        draw_wrapped(draw, detail, (sx + 26, strength_y + 112), FONTS["body_sm"], MUTED, strength_w - 52, line_gap=10, max_lines=3)
+
+    alpha_box(page, (112, 1865, PDF_W - 112, 2148), fill=(234, 225, 204), alpha=215, radius=8, outline=(205, 185, 146))
     draw = ImageDraw.Draw(page)
-    draw.text((160, 2080), "人工介入的核心判断", font=FONTS["h3"], fill=INK)
-    note = "主题策划、诗词选择、候选筛选、构图后期、色彩统一、声音轨迹、声境印记和提交编排均由人工完成。AIGC 只承担无文字底图的素材生成。"
-    draw_wrapped(draw, note, (160, 2140), FONTS["body_sm"], SOFT_INK, PDF_W - 320, line_gap=12, max_lines=3)
+    draw.text((160, 1912), "人工判断与 GPT 辅助的边界", font=FONTS["h3"], fill=INK)
+    note = (
+        "OpenAI GPT 负责提供无文字诗境底图候选，GPT 辅助把图像编辑意图转写为 Python + Pillow 代码。"
+        "主题策划、诗词选择、候选筛选、参数取舍、审美校正和提交编排均由人工完成。"
+    )
+    draw_wrapped(draw, note, (160, 1978), FONTS["body_sm"], SOFT_INK, PDF_W - 320, line_gap=12, max_lines=4)
     draw_footer(page, 5)
     return page
 
 
 def make_prompt_evidence() -> Image.Image:
     page = page_base()
-    draw_header(page, "04", "Prompt 与底图证据", 6)
+    draw_header(page, "04", "Prompt 与代码编辑证据", 6)
     draw = ImageDraw.Draw(page)
 
-    draw.text((112, 255), "Prompt 不是一句描述，而是四层控制", font=FONTS["h1"], fill=INK)
+    draw.text((112, 255), "Prompt 控制底图，代码控制成品", font=FONTS["h1"], fill=INK)
     layers = [
         ("场景氛围", "时间、天气、光线与情绪基调"),
         ("核心物象", "扁舟、江枫、林木、窗灯等诗中物"),
         ("声音转译", "涟漪、断线、回声弧、雨痕等机制"),
-        ("共享风格", "当代水墨、矿物色、宣纸纹理"),
+        ("代码编辑", "调色、留白、轨迹、竖排与压缩"),
     ]
     y = 368
     for i, (title, detail) in enumerate(layers):
@@ -561,10 +627,10 @@ def make_prompt_evidence() -> Image.Image:
         rounded(draw, (x, y, x + 340, y + 190), radius=8, fill=PAPER_LIGHT, outline=(211, 195, 160), width=2)
         draw.text((x + 24, y + 24), f"{i + 1:02d}", font=FONTS["latin"], fill=[MOSS, AMBER, INDIGO, RUST][i])
         draw.text((x + 24, y + 70), title, font=FONTS["h3"], fill=INK)
-        draw_wrapped(draw, detail, (x + 24, y + 122), FONTS["caption"], MUTED, 290, line_gap=8, max_lines=2)
+        draw_wrapped(draw, detail, (x + 24, y + 122), FONTS["body_sm"], MUTED, 290, line_gap=10, max_lines=2)
 
-    draw.text((112, 680), "滚图逻辑与底图证据", font=FONTS["h1"], fill=INK)
-    draw.text((112, 750), "每首诗围绕同一四层 Prompt 进行多轮生成，先筛掉含字、构图混乱或诗意偏差的结果，再保留最稳定的无文字底图进入后期。", font=FONTS["body_sm"], fill=MUTED)
+    draw.text((112, 680), "OpenAI GPT 底图证据", font=FONTS["h1"], fill=INK)
+    draw.text((112, 750), "每首诗围绕统一 Prompt 结构生成无文字底图，先筛掉含字、构图混乱或诗意偏差的结果，再保留最稳定版本进入代码编辑阶段。", font=FONTS["body_sm"], fill=MUTED)
     grid_top = 840
     thumb_w, thumb_h = 236, 354
     gap = 70
@@ -575,24 +641,51 @@ def make_prompt_evidence() -> Image.Image:
         draw.text((x, grid_top + thumb_h + 28), item["index"], font=FONTS["latin"], fill=AMBER)
         draw.text((x + 48, grid_top + thumb_h + 22), f"{item['title']} / {item['sound']}", font=FONTS["body_sm"], fill=INK)
 
-    style_y = 1398
-    draw.text((112, style_y), "共享风格限定词", font=FONTS["h1"], fill=INK)
-    alpha_box(page, (112, style_y + 88, PDF_W - 112, style_y + 255), fill=(237, 231, 216), alpha=230, radius=8, outline=(207, 190, 154))
-    draw = ImageDraw.Draw(page)
-    prompt_suffix = "contemporary Chinese ink wash, mineral pigment, xuan paper grain"
-    draw_word_wrapped(draw, prompt_suffix, (156, style_y + 138), FONTS["prompt"], INDIGO, PDF_W - 312, line_gap=10, max_lines=2)
-    explain = (
-        "该后缀用于稳定系列介质：宣纸颗粒提供传统触感，矿物色控制色彩厚度，"
-        "当代水墨避免过度写实或动漫化。"
-    )
-    draw_wrapped(draw, explain, (112, style_y + 330), FONTS["body"], SOFT_INK, PDF_W - 224, line_gap=18, max_lines=3)
+    style_y = 1378
+    draw.text((112, style_y), "底图到成品的代码编辑闭环", font=FONTS["h1"], fill=INK)
+    edit_steps = [
+        ("01", "统一色调", "压低杂色，统一水墨与矿物色"),
+        ("02", "生成留白", "加宣纸侧栏，容纳诗文和印记"),
+        ("03", "声音轨迹", "把五种声音转成可控图层"),
+        ("04", "输出检查", "控制尺寸、DPI、压缩和匿名信息"),
+    ]
+    step_w = 350
+    step_y = style_y + 95
+    for i, (num, title, detail) in enumerate(edit_steps):
+        sx = 112 + i * (step_w + 38)
+        rounded(draw, (sx, step_y, sx + step_w, step_y + 220), radius=8, fill=PAPER_LIGHT, outline=(210, 195, 163), width=2)
+        draw.text((sx + 26, step_y + 24), num, font=FONTS["latin_sm"], fill=[MOSS, AMBER, INDIGO, RUST][i])
+        draw.text((sx + 26, step_y + 58), title, font=FONTS["h3"], fill=INK)
+        draw_wrapped(draw, detail, (sx + 26, step_y + 112), FONTS["body_sm"], MUTED, step_w - 52, line_gap=10, max_lines=3)
 
-    draw.text((112, 1960), "负向控制", font=FONTS["h1"], fill=INK)
-    negatives = ["不生成文字", "不出现 UI 元素", "不使用商业标识", "不出现真实人物身份"]
-    for i, item in enumerate(negatives):
+    alpha_box(page, (112, 1710, PDF_W - 112, 1980), fill=(237, 231, 216), alpha=230, radius=8, outline=(207, 190, 154))
+    draw = ImageDraw.Draw(page)
+    draw.text((156, 1742), "代码编辑逻辑", font=FONTS["h3"], fill=INK)
+    code_lines = [
+        "base = openai_gpt(prompt)",
+        "work = tune_palette(base, palette)",
+        "work = add_margin_trace(work)",
+        "export(work, dpi=300, max_mb=5)",
+    ]
+    cy = 1782
+    for line in code_lines:
+        draw.text((156, cy), line, font=FONTS["latin"], fill=INDIGO)
+        cy += 37
+    draw.line((760, 1738, 760, 1954), fill=(202, 184, 150), width=2)
+    draw.text((808, 1742), "共享风格限定词", font=FONTS["h3"], fill=INK)
+    style_terms = ["当代水墨", "矿物色", "宣纸肌理"]
+    for i, term in enumerate(style_terms):
+        tx = 808 + i * 220
+        rounded(draw, (tx, 1792, tx + 190, 1864), radius=8, fill=PAPER_LIGHT, outline=(210, 195, 163), width=1)
+        draw.text((tx + 22, 1811), term, font=FONTS["h3"], fill=INDIGO)
+    draw_wrapped(draw, "Prompt 稳定画面介质；代码固定色调、留白、声音轨迹和输出规格。", (808, 1884), FONTS["body_sm"], MUTED, 690, line_gap=10, max_lines=2)
+
+    draw.text((112, 2038), "竞争力控制点", font=FONTS["h1"], fill=INK)
+    code_tasks = ["底图无文字", "代码可复用", "系列参数统一", "提交规格稳定"]
+    for i, item in enumerate(code_tasks):
         x = 112 + i * 390
-        rounded(draw, (x, 2052, x + 330, 2148), radius=8, fill=PAPER_LIGHT, outline=(210, 195, 163), width=2)
-        draw.text((x + 28, 2084), item, font=FONTS["body_sm"], fill=INK)
+        rounded(draw, (x, 2124, x + 330, 2220), radius=8, fill=PAPER_LIGHT, outline=(210, 195, 163), width=2)
+        draw.text((x + 28, 2156), item, font=FONTS["body_sm"], fill=INK)
     draw_footer(page, 6)
     return page
 
@@ -626,28 +719,44 @@ def make_work_page(item: dict, page_no: int) -> Image.Image:
 
     source = fit_resize(Image.open(str(source_path(item))).convert("RGB"), (210, 315))
     paste_image_with_outline(page, source, (x, 1090), outline=(181, 160, 123), width=2)
-    draw.text((x + 250, 1090), "AIGC 原始底图", font=FONTS["h3"], fill=INK)
-    draw_wrapped(draw, "无文字场景素材，后续叠加宣纸留白、竖排诗文、声境印记和统一色调。", (x + 250, 1148), FONTS["body_sm"], MUTED, 360, line_gap=10, max_lines=5)
+    draw.text((x + 250, 1090), "OpenAI GPT 底图", font=FONTS["h3"], fill=INK)
+    draw_wrapped(draw, "无文字场景素材，后续通过 GPT 辅助编写的 Python + Pillow 逻辑叠加留白、诗文、印记和统一色调。", (x + 250, 1148), FONTS["body_sm"], MUTED, 360, line_gap=10, max_lines=5)
     draw.text((x + 250, 1372), f"色谱：{item['palette']}", font=FONTS["body_sm"], fill=INK)
 
     prompt_y = 1670
     alpha_box(page, (112, prompt_y, PDF_W - 112, 2240), fill=(238, 232, 216), alpha=232, radius=8, outline=(205, 185, 146))
     draw = ImageDraw.Draw(page)
-    draw.text((158, prompt_y + 42), "完整 Prompt", font=FONTS["h3"], fill=INK)
-    draw_word_wrapped(draw, item["prompt"], (158, prompt_y + 102), FONTS["prompt"], SOFT_INK, 860, line_gap=11, max_lines=7)
-
-    draw.line((1100, prompt_y + 52, 1100, prompt_y + 512), fill=(202, 184, 150), width=2)
-    draw.text((1150, prompt_y + 42), "人工排版动作", font=FONTS["h3"], fill=INK)
-    actions = [
-        "筛选最贴合诗意与系列气质的底图版本",
-        "统一色温、饱和度与宣纸右侧留白",
-        "设置标题、作者、诗句三级竖排关系",
-        "加入声境印记与声音轨迹，控制画面节奏",
+    draw.text((158, prompt_y + 42), "底图 Prompt", font=FONTS["h3"], fill=INK)
+    prompt_end = draw_word_wrapped(draw, item["prompt"], (158, prompt_y + 104), FONTS["prompt"], SOFT_INK, 940, line_gap=15, max_lines=7)
+    draw.line((158, prompt_end + 22, 1115, prompt_end + 22), fill=(216, 199, 164), width=1)
+    focus_items = [
+        ("场景", f"{item['title']}的时间与空间"),
+        ("声音", f"{item['sound']}转成墨痕节奏"),
+        ("媒介", "当代水墨 / 宣纸肌理"),
+        ("规则", "无文字底图，后期留白"),
     ]
-    ay = prompt_y + 110
+    focus_y = max(prompt_end + 54, prompt_y + 330)
+    for i, (label, detail) in enumerate(focus_items):
+        fx = 158 + (i % 2) * 485
+        fy = focus_y + (i // 2) * 86
+        rounded(draw, (fx, fy, fx + 445, fy + 62), radius=8, fill=PAPER_LIGHT, outline=(216, 199, 164), width=1)
+        draw.text((fx + 22, fy + 16), label, font=FONTS["body_sm"], fill=color)
+        draw.text((fx + 118, fy + 16), detail, font=FONTS["body_sm"], fill=MUTED)
+
+    divider_x = 1180
+    draw.line((divider_x, prompt_y + 52, divider_x, prompt_y + 512), fill=(202, 184, 150), width=2)
+    draw.text((1228, prompt_y + 42), "GPT 代码编辑", font=FONTS["h3"], fill=INK)
+    draw.text((1228, prompt_y + 86), "人工校正", font=FONTS["h3"], fill=INK)
+    actions = [
+        "用 Python + Pillow 统一色温、饱和度与宣纸留白",
+        "用代码叠加声音轨迹，保持五张作品的节奏一致",
+        "人工校正标题、作者、诗句三级竖排关系",
+        "加入声境印记并压缩输出，确认画面没有文字溢出",
+    ]
+    ay = prompt_y + 156
     for action in actions:
-        draw.ellipse((1154, ay + 7, 1170, ay + 23), fill=color)
-        ay = draw_wrapped(draw, action, (1190, ay), FONTS["body_sm"], SOFT_INK, 420, line_gap=8, max_lines=2) + 16
+        draw.ellipse((1228, ay + 7, 1244, ay + 23), fill=color)
+        ay = draw_wrapped(draw, action, (1264, ay), FONTS["body_sm"], SOFT_INK, 315, line_gap=8, max_lines=3) + 16
 
     draw_footer(page, page_no)
     return page
@@ -655,15 +764,15 @@ def make_work_page(item: dict, page_no: int) -> Image.Image:
 
 def make_disclosure() -> Image.Image:
     page = page_base()
-    draw_header(page, "06", "原创声明与过程索引", 12)
+    draw_header(page, "06", "原创声明与人工介入", 12)
     draw = ImageDraw.Draw(page)
 
     draw.text((112, 255), "AIGC 使用声明", font=FONTS["h1"], fill=INK)
     disclosure = (
-        "底图由 GLM-5.2（智谱 AI 大模型）辅助生成无文字场景底图；主题策划、诗词选择、"
-        "提示词设计、候选筛选、构图、色彩统一、字体选择、声音轨迹、声境印记设计、"
-        "系列海报合成、过程编排和提交规格检查均由人工完成。所有古诗均属于公有领域；"
-        "生成图中未使用真实人物身份、商业品牌或第三方赛事标识。"
+        "无文字诗境底图由 OpenAI GPT 辅助生成；后续通过 Python + Pillow 完成调色、"
+        "宣纸留白、声音轨迹、竖排诗文、声境印记、系列海报合成、过程编排与压缩输出。"
+        "图像编辑与排版代码由 GPT 辅助生成和迭代。主题策划、诗词选择、候选筛选、参数取舍、"
+        "审美校正和提交规格检查均由人工完成。所有古诗均属于公有领域；生成图中未使用真实人物身份、商业品牌或第三方赛事标识。"
     )
     draw_wrapped(draw, disclosure, (112, 345), FONTS["body"], SOFT_INK, PDF_W - 224, line_gap=20, max_lines=7)
 
@@ -671,39 +780,19 @@ def make_disclosure() -> Image.Image:
     interventions = [
         ("系列策展", "确定“声音到构图规则”的主题，并选择五首具有声音内在关系的诗词。"),
         ("视觉系统", "统一色谱、宣纸质感、竖排规范、声境印记和留白比例。"),
-        ("后期算法", "设置调色、压红、纸色叠加、竖排、印记和压缩参数。"),
-        ("候选筛选", "在多张 AIGC 底图中选择最符合诗意和系列一致性的版本。"),
+        ("代码编辑", "借助 GPT 生成并修改 Python + Pillow 代码，设置调色、纸色叠加、竖排、印记和压缩参数。"),
+        ("候选筛选", "在多张 OpenAI GPT 底图中选择最符合诗意和系列一致性的版本。"),
         ("海报设计", "确定主景、标题位置、声音列表、视觉落款和画面节奏。"),
         ("合规检查", "逐项验证尺寸、DPI、文件大小、视频编码和匿名信息。"),
     ]
     card_w = 735
+    card_h = 270
     for i, (title, detail) in enumerate(interventions):
         x = 112 + (i % 2) * (card_w + 60)
-        y = 858 + (i // 2) * 238
-        rounded(draw, (x, y, x + card_w, y + 180), radius=8, fill=PAPER_LIGHT, outline=(212, 195, 160), width=2)
-        draw.text((x + 32, y + 24), title, font=FONTS["h3"], fill=INK)
-        draw_wrapped(draw, detail, (x + 32, y + 78), FONTS["body_sm"], MUTED, card_w - 64, line_gap=10, max_lines=3)
-
-    draw.text((112, 1668), "过程说明内容索引", font=FONTS["h1"], fill=INK)
-    index_items = [
-        ("创意说明", "第 03 页说明选题来源、声音机制和文化转译方向。"),
-        ("工具组合", "第 05 页说明 AIGC、人工筛选、视觉后期与程序排版链路。"),
-        ("滚图逻辑", "第 06 页说明多轮生成、筛选条件与底图证据。"),
-        ("提示词", "第 06-11 页保留结构化 Prompt 与五件作品的完整 Prompt。"),
-    ]
-    y = 1765
-    for i, (title, detail) in enumerate(index_items):
-        x = 112 + (i % 2) * (735 + 60)
-        cy = y + (i // 2) * 170
-        rounded(draw, (x, cy, x + 735, cy + 128), radius=8, fill=(239, 233, 218), outline=(213, 195, 160), width=1)
-        draw.text((x + 30, cy + 22), title, font=FONTS["h3"], fill=INK)
-        draw_wrapped(draw, detail, (x + 30, cy + 72), FONTS["caption"], MUTED, 660, line_gap=7, max_lines=2)
-
-    closing = (
-        "本页作为创作过程的收束，强调 AIGC 素材生成与人工设计判断之间的边界："
-        "技术提供候选图像，最终的主题、形式、节奏与提交表达由人工完成。"
-    )
-    draw_wrapped(draw, closing, (112, 2138), FONTS["body_sm"], SOFT_INK, PDF_W - 224, line_gap=12, max_lines=3)
+        y = 838 + (i // 2) * 322
+        rounded(draw, (x, y, x + card_w, y + card_h), radius=8, fill=PAPER_LIGHT, outline=(212, 195, 160), width=2)
+        draw.text((x + 34, y + 36), title, font=FONTS["h3"], fill=INK)
+        draw_wrapped(draw, detail, (x + 34, y + 104), FONTS["body"], MUTED, card_w - 68, line_gap=14, max_lines=3)
 
     draw_footer(page, 12)
     return page
